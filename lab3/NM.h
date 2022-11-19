@@ -1,4 +1,5 @@
 #pragma once
+#include <iostream>
 #include <vector>
 #include <cassert>
 
@@ -10,7 +11,7 @@ public:
 
 	}
 
-	vector<float> tridiagonalSolution(const vector<vector<float>>& matrix1, const vector<float>& matrix2) {
+	static vector<float> tridiagonalSolution(const vector<vector<float>>& matrix1, const vector<float>& matrix2) {
     assert(matrix1.size() == matrix2.size() && "Sizes match");
 
     double y;
@@ -34,6 +35,30 @@ public:
 
     return matRes;
 
+    }
+
+    template <typename T>
+    static void printArray(const vector<T>& matrix1){
+        cout << "SIZE = " << matrix1.size() << endl;
+
+        for(int i = 0; i < matrix1.size(); i++){
+            cout << matrix1[i] << endl;
+        }
+
+    }
+
+    template <typename T>
+    static void printArray(const vector<vector<T>>& matrix1){
+        cout << "SIZE 1 = " << matrix1.size() << endl;
+        cout << "SIZE 2 = " << matrix1[0].size() << endl;
+        cout << endl;
+
+        for(int i = 0; i < matrix1.size(); i++){
+            for(int j = 0; j < matrix1[i].size(); j++){
+                cout << matrix1[i][j] << " ";
+            }
+        cout << endl;
+        }
     }
 
 };
