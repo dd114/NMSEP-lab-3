@@ -11,13 +11,13 @@ public:
 
 	}
 
-	static vector<float> tridiagonalSolution(const vector<vector<float>>& matrix1, const vector<float>& matrix2) {
+	static vector<double> tridiagonalSolution(const vector<vector<double>>& matrix1, const vector<double>& matrix2) {
     assert(matrix1.size() == matrix2.size() && "Sizes match");
 
     double y;
     int N = matrix2.size();
     int N1 = N - 1;
-    vector<float> a(N), B(N), matRes(N);
+    vector<double> a(N), B(N), matRes(N);
 
     y = matrix1[0][0];
     a[0] = -matrix1[0][1] / y;
@@ -39,6 +39,7 @@ public:
 
     template <typename T>
     static void printArray(const vector<T>& matrix1){
+        cout << endl;
         cout << "SIZE = " << matrix1.size() << endl;
 
         for(int i = 0; i < matrix1.size(); i++){
@@ -49,9 +50,9 @@ public:
 
     template <typename T>
     static void printArray(const vector<vector<T>>& matrix1){
+        cout << endl;
         cout << "SIZE 1 = " << matrix1.size() << endl;
         cout << "SIZE 2 = " << matrix1[0].size() << endl;
-        cout << endl;
 
         for(int i = 0; i < matrix1.size(); i++){
             for(int j = 0; j < matrix1[i].size(); j++){
