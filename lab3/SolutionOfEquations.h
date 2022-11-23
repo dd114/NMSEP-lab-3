@@ -3,6 +3,7 @@
 #include <functional>
 #include <vector>
 #include <fstream>
+#include <cmath>
 #include "NM.h"
 
 using namespace std;
@@ -18,10 +19,12 @@ class SolutionOfEquations {
     function<double (double)> phi;
     function<double (double)> managementFunction;
 
+    double p_min = 0, p_max = 4000. / 27.;
+
     //vector<vector<double>> u;
     //vector<vector<double>> psi;
 
-    vector<double> management;
+    vector<double> initialManagement;
 
     //vector<double> y;
 
@@ -45,15 +48,19 @@ public:
         tau = T / (numberOfPointsT - 1);
 
 
-        management = vector<double>(numberOfPointsT);
+        initialManagement = vector<double>(numberOfPointsT);
 
         for (int i = 0; i < numberOfPointsT; i++) {
-            management[i] = managementFunction(i * tau);
+            initialManagement[i] = managementFunction(i * tau);
         }
 
 	}
 
-	vector<vector<double>> straightTask() {
+    vector<vector<double>> straightTask(vector<double> currentManagement = {}) {
+
+        if (currentManagement.empty())
+            currentManagement = initialManagement;
+        
 
         vector<vector<double>> u = vector<vector<double>>(numberOfPointsT, vector<double>(numberOfPointsL));
 
@@ -98,7 +105,7 @@ public:
             A[A.size() - 1][A.size() - 1] = ku_2 + ku_3 * (1. / (1. + beta * h));
             A[A.size() - 1][A.size() - 1 - 1] = ku_1;
 
-            b[b.size() - 1] = ku_4 * u[i - 1][u[i - 1].size() - 1 - 1] - ku_3 * ((1. / (1. + beta * h)) * beta * h * management[i]);
+            b[b.size() - 1] = ku_4 * u[i - 1][u[i - 1].size() - 1 - 1] - ku_3 * ((1. / (1. + beta * h)) * beta * h * currentManagement[i]);
 
             vector<double> tempU = NM::tridiagonalSolution(A, b);
 
@@ -110,7 +117,7 @@ public:
             }
 
             u[i][0] = u[i][1] - p1 * h;
-            u[i][u[i].size() - 1] = u[i][u[i].size() - 1 - 1] * (1. / (1. + beta * h)) + beta * h * management[i];
+            u[i][u[i].size() - 1] = u[i][u[i].size() - 1 - 1] * (1. / (1. + beta * h)) + beta * h * currentManagement[i];
 
 
 
@@ -203,57 +210,92 @@ public:
 
 
 
-    void calculation(const vector<double>& y) {
+    vector<double> calculation(const vector<double>& y) {
 
+        vector<double> currentManagement = initialManagement;
+
+        for (int i = 0; i < 1000; i++) {
+
+            vector<vector<double>> u = straightTask(currentManagement);
+            vector<vector<double>> psi = conjugateTask(u, y);
+
+            vector<double> tempManagement(psi.size());
+
+            for (int j = 0; j < tempManagement.size(); j++) {
+                if (psi[j][psi[j].size() - 1] >= 0)
+                    tempManagement[j] = p_min;
+                else
+                    tempManagement[j] = p_max;
+            }
+
+
+            vector<double> integrandOfNumerator(psi.size());
+
+            for (int j = 0; j < integrandOfNumerator.size(); j++) {
+                integrandOfNumerator[j] = a2 * beta * psi[j][psi[j].size() - 1] * (tempManagement[j] - currentManagement[j]);
+            }
+
+            double numerator = rectangleSquare(integrandOfNumerator, tau);
+
+
+
+
+            vector<double> integrandOfDenominator(u[u.size() - 1].size());
+
+            vector<vector<double>> tempU = straightTask(tempManagement);
+
+            for (int j = 0; j < integrandOfDenominator.size(); j++) {
+                integrandOfDenominator[j] = (tempU[tempU.size() - 1][j] - u[u.size() - 1][j]) * (tempU[tempU.size() - 1][j] - u[u.size() - 1][j]);
+            }
+
+            double denominator = rectangleSquare(integrandOfDenominator, h);
+
+
+            double currentAlfa = min(-0.5 * (numerator / denominator), 1.);
+
+
+
+            for (int j = 0; j < currentManagement.size(); j++) {
+                currentManagement[j] = currentManagement[j] + currentAlfa * (tempManagement[j] - currentManagement[j]);
+            }
+
+
+            if (true) {
+                vector<vector<double>> answerU = straightTask(currentManagement);
+                cout << l2Norm(answerU[answerU.size() - 1], y, h) << endl;
+            }
+        }
+
+        vector<vector<double>> answerU = straightTask(currentManagement);
+
+        return answerU[answerU.size() - 1];
 
     }
 
+    double rectangleSquare(const vector<double>& vec, const double step) &{
+        double sum = 0;
+        for (int i = 0; i < vec.size(); i++) {
+            sum += vec[i] * step;
+        }
 
+        return sum;
+    }
 
+    double l2Norm(const vector<double>& vec, const vector<double>& y, const double step) {
+        vector<double> tempVec(vec.size());
+        for (int i = 0; i < tempVec.size(); i++) {
+            tempVec[i] = (vec[i] - y[i]) * (vec[i] - y[i]);
+        }
 
-
-
-    //void printFileLastLayerU(string nameOfFile = "ySolution.txt") {
-    //    fstream solution(nameOfFile, ios::out);
-
-    //    for (int i = 0; i < u[u.size() - 1].size(); i++) {
-    //        solution << i * h << " " << u[u.size() - 1][i] << endl;
-    //    }
-
-    //    solution.close();
-    //}
-
-    //void printFileU(string nameOfFile = "trueSolution.txt") {
-    //    fstream solution(nameOfFile, ios::out);
-
-    //    for (int i = 0; i < u.size(); i++) {
-    //        for (int j = 0; j < u[i].size(); j++) {
-    //            solution << i * tau << " " << j * h << " " << u[i][j] << endl;
-    //        }
-    //    }
-
-    //    solution.close();
-    //}
-
-
-    //void printFilePsi(string nameOfFile = "PsiSolution.txt") {
-    //    fstream solution(nameOfFile, ios::out);
-
-    //    for (int i = 0; i < psi.size(); i++) {
-    //        for (int j = 0; j < psi[i].size(); j++) {
-    //            solution << i * tau << " " << j * h << " " << psi[i][j] << endl;
-    //        }
-    //    }
-
-    //    solution.close();
-    //}
+        return rectangleSquare(tempVec, step);
+    }
 
     template <typename T>
     void printFile(const vector<T>& u, string nameOfFile = "ySolution.txt") {
         fstream solution(nameOfFile, ios::out);
 
-        for (int i = 0; i < u[u.size() - 1].size(); i++) {
-            solution << i * h << " " << u[u.size() - 1][i] << endl;
+        for (int i = 0; i < u.size(); i++) {
+            solution << i * h << " " << u[i] << endl;
         }
 
         solution.close();
