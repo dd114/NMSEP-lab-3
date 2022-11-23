@@ -141,9 +141,11 @@
   <ItemGroup>
     <ClCompile Include="lab3.cpp" />
     <ClCompile Include="NM.cpp" />
+    <ClCompile Include="SolutionOfEquations.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NM.h" />
+    <ClInclude Include="SolutionOfEquations.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
