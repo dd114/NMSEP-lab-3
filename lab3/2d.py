@@ -4,7 +4,7 @@ import numpy as np
 
 if __name__ == '__main__':
 
-    f = open('ySolution.txt', 'r')
+    f = open('trueY.txt', 'r') # требования к файлу: первая колонка - координата/время, вторая - значения функции
     # f = open('approxY.txt', 'r')
     tempX = list()
     tempY = list()

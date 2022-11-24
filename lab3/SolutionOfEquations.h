@@ -32,7 +32,7 @@ class SolutionOfEquations {
 
 
 public:
-	SolutionOfEquations(double L, double T, double a, double beta, int numberOfPointsL, int numberOfPointsT, double (*phiFunction)(double), double (*managementFunction)(double)) {
+	SolutionOfEquations(double L, double T, double a, double beta, int numberOfPointsL, int numberOfPointsT, function<double(double)> phiFunction, function<double(double)> managementFunction) {
         this->L = L; 
         this->T = T;
         this->a = a;
@@ -144,11 +144,11 @@ public:
         vector<vector<double>> A(numberOfPointsL - 2, vector<double>(numberOfPointsL - 2));
         vector<double> b(numberOfPointsL - 2);
 
-        double ku_1 = a2 / (h * h);
-        double ku_2 = -((2. * a2) / (h * h) + 1. / tau);
+        double ku_1 = -a2 / (h * h);
+        double ku_2 = -((-2. * a2) / (h * h) - 1. / tau);
         double ku_3 = ku_1;
 
-        double ku_4 = -1. / tau;
+        double ku_4 = 1. / tau;
 
 
         for (int i = (numberOfPointsT - 1) - 1; i >= 0; i--) {
@@ -204,22 +204,22 @@ public:
 
 
 
-    vector<double> calculation(const vector<double>& y) {
+    vector<double> calculation(const vector<double>& y, double epsilon = 0.01) {
 
         vector<double> currentManagement = initialManagement;
 
-        double prevL2Norm = 1e+8;
-        double nowL2Norm = -1;
-        double currentAlfa = 0.01;
+        double nowL2Norm = 1e+10;
+        int numberOfIteration = 0;
 
-        for (int i = 0; i < 10000; i++) {
+        while(nowL2Norm > epsilon) {
+
+            numberOfIteration++;
 
             vector<vector<double>> u = straightTask(currentManagement);
 
-            prevL2Norm = nowL2Norm;
             nowL2Norm = l2Norm(u[u.size() - 1], y, h);
 
-            cout << nowL2Norm << endl;
+            cout << "i = " << numberOfIteration << " nowL2Norm = " << nowL2Norm << endl;
 
 
             vector<vector<double>> psi = conjugateTask(u, y);

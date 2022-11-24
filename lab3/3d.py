@@ -4,7 +4,7 @@ import numpy as np
 
 if __name__ == '__main__':
 
-    f = open('trueSolution.txt', 'r')
+    f = open('trueSolution.txt', 'r') # требования к файлу: первая колонка - время, вторая - координата, третья - значения функции на них
     tempT = list()
     tempX = list()
     tempU = list()
