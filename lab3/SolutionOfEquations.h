@@ -102,8 +102,8 @@ public:
 
             //double p2 = derivative_U_X_end(i * tau, u[i - 1][u[i - 1].size() - 1]);
 
-            A[A.size() - 1][A.size() - 1] = ku_2 + ku_3 * (1. / (1. + beta * h));
             A[A.size() - 1][A.size() - 1 - 1] = ku_1;
+            A[A.size() - 1][A.size() - 1] = ku_2 + ku_3 * (1. / (1. + beta * h));
 
             b[b.size() - 1] = ku_4 * u[i - 1][u[i - 1].size() - 1 - 1] - ku_3 * ((1. / (1. + beta * h)) * beta * h * currentManagement[i]);
 
@@ -125,16 +125,12 @@ public:
             //NM::printArray(A);
         }
 
-        newU = true;
 
         return u;
 	}
 
 
     vector<vector<double>> conjugateTask(const  vector<vector<double>>& u, const vector<double>& y) {
-
-        if (!newU)
-            throw("U isn't ready for calculations");
 
         vector<vector<double>> psi = vector<vector<double>>(numberOfPointsT, vector<double>(numberOfPointsL));
 
@@ -148,8 +144,8 @@ public:
         vector<vector<double>> A(numberOfPointsL - 2, vector<double>(numberOfPointsL - 2));
         vector<double> b(numberOfPointsL - 2);
 
-        double ku_1 = - a2 / (h * h);
-        double ku_2 = -( - (2. * a2) / (h * h) + 1. / tau);
+        double ku_1 = a2 / (h * h);
+        double ku_2 = -((2. * a2) / (h * h) + 1. / tau);
         double ku_3 = ku_1;
 
         double ku_4 = -1. / tau;
@@ -179,8 +175,8 @@ public:
 
             //double p2 = derivative_U_X_end(i * tau, u[i - 1][u[i - 1].size() - 1]);
 
-            A[A.size() - 1][A.size() - 1] = ku_2 + ku_3 * (1. / (1. + beta * h));
             A[A.size() - 1][A.size() - 1 - 1] = ku_1;
+            A[A.size() - 1][A.size() - 1] = ku_2 + ku_3 * (1. / (1. + beta * h));
 
             b[b.size() - 1] = ku_4 * psi[i + 1][psi[i + 1].size() - 1 - 1];
 
@@ -202,8 +198,6 @@ public:
             //NM::printArray(A);
         }
 
-        newU = false;
-
         return psi;
 
     }
@@ -214,9 +208,20 @@ public:
 
         vector<double> currentManagement = initialManagement;
 
-        for (int i = 0; i < 1000; i++) {
+        double prevL2Norm = 1e+8;
+        double nowL2Norm = -1;
+        double currentAlfa = 0.01;
+
+        for (int i = 0; i < 10000; i++) {
 
             vector<vector<double>> u = straightTask(currentManagement);
+
+            prevL2Norm = nowL2Norm;
+            nowL2Norm = l2Norm(u[u.size() - 1], y, h);
+
+            cout << nowL2Norm << endl;
+
+
             vector<vector<double>> psi = conjugateTask(u, y);
 
             vector<double> tempManagement(psi.size());
@@ -253,17 +258,17 @@ public:
 
             double currentAlfa = min(-0.5 * (numerator / denominator), 1.);
 
+            //currentAlfa = 0.001;
 
+            //if (nowL2Norm < 600) {
+            //    currentAlfa = 0.00001;
+            //}
 
             for (int j = 0; j < currentManagement.size(); j++) {
                 currentManagement[j] = currentManagement[j] + currentAlfa * (tempManagement[j] - currentManagement[j]);
             }
 
 
-            if (true) {
-                vector<vector<double>> answerU = straightTask(currentManagement);
-                cout << l2Norm(answerU[answerU.size() - 1], y, h) << endl;
-            }
         }
 
         vector<vector<double>> answerU = straightTask(currentManagement);

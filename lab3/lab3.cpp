@@ -22,7 +22,7 @@ int main(){
     //double h = L / (numberOfPointsL - 1);
     //double tau = T / (numberOfPointsT - 1);
 
-    SolutionOfEquations SolutionForY(L, T, a, beta, numberOfPointsL, numberOfPointsT, [](double x) { return 100. * x; }, [](double t) { return 1000. * t * t *(1 - t); });
+    SolutionOfEquations SolutionForY(L, T, a, beta, numberOfPointsL, numberOfPointsT, [](double x) { return 100. * x; }, [](double t) { return 1000. * t * t * (1 - t); });
 
     vector<vector<double>> trueU = SolutionForY.straightTask();
 
@@ -33,7 +33,7 @@ int main(){
 
 
 
-    SolutionOfEquations CurrentSolution(L, T, a, beta, numberOfPointsL, numberOfPointsT, [](double x) { return 100. * x; }, [](double t) { return 50 * t * t; });
+    SolutionOfEquations CurrentSolution(L, T, a, beta, numberOfPointsL, numberOfPointsT, [](double x) { return 100. * x; }, [](double t) { return 1000. * t * t; });
 
     //vector<vector<double>> u = CurrentSolution.straightTask();
 
