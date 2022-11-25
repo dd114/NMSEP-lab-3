@@ -19,7 +19,7 @@ class SolutionOfEquations {
     function<double (double)> phi;
     function<double (double)> managementFunction;
 
-    double p_min = 0, p_max = 4000. / 27.;
+    double p_min = 0, p_max = 4000.;
 
     //vector<vector<double>> u;
     //vector<vector<double>> psi;
@@ -27,8 +27,6 @@ class SolutionOfEquations {
     vector<double> initialManagement;
 
     //vector<double> y;
-
-    bool newU = false;
 
 
 public:
